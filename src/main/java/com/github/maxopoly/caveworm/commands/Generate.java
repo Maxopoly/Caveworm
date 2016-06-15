@@ -2,15 +2,12 @@ package com.github.maxopoly.caveworm.commands;
 
 import java.util.List;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
-import com.flowpowered.noise.Noise;
-import com.flowpowered.noise.NoiseQuality;
+import org.bukkit.util.noise.PerlinNoiseGenerator;
 
 import vg.civcraft.mc.civmodcore.command.PlayerCommand;
 
@@ -27,11 +24,21 @@ public class Generate extends PlayerCommand {
 	public boolean execute(CommandSender sender, String[] args) {
 		Player p = (Player) sender;
 		Location startLoc = p.getLocation();
+		//50 is okay here, more tends to take a while as this is n^3
 		int range = Integer.parseInt(args[0]);
+		//just do something here
 		int seed = Integer.parseInt(args[1]);
+		//value around which hits are searched
 		double targetVal = Double.parseDouble(args [2]);
+		//range around the given value which will turn block into air, if its within range
 		double fuzz = Double.parseDouble(args [3]);
+		//higher octaves mean more randomness, try 10-50 here
+		int octaves = Integer.parseInt(args[4]);
+		//lower frequency makes caves more "blobby", values between 0.05 and 0.5 are recommended
+		double frequency = Double.parseDouble(args [5]);
+		double amplitude = Double.parseDouble(args [6]);
 		startLoc.getBlock().setType(Material.GOLD_BLOCK);
+		PerlinNoiseGenerator generator = new PerlinNoiseGenerator(seed);
 		World w = startLoc.getWorld();
 		for (int x = startLoc.getBlockX() - range; x <= startLoc.getBlockX()
 				+ range; x++) {
@@ -39,7 +46,7 @@ public class Generate extends PlayerCommand {
 					.getBlockY() + range; y++) {
 				for (int z = startLoc.getBlockZ() - range; z <= startLoc
 						.getBlockZ() + range; z++) {
-					double noise = Noise.gradientCoherentNoise3D(x, y, z, seed, NoiseQuality.BEST);
+					double noise = generator.getNoise(x, y ,z, octaves, frequency,  amplitude);
 					System.out.println("Noise for " + x + "," + y + "," + z
 							+ " is " + noise);
 					if (noise <= targetVal+fuzz && noise >= targetVal -fuzz) {
