@@ -45,114 +45,109 @@ public class PerlinNoiseGen extends PlayerCommand {
 		double amplitude = Double.parseDouble(args[6]);
 		int caveWidthLimit = Integer.parseInt(args[7]);
 		startLoc.getBlock().setType(Material.GOLD_BLOCK);
+		double[][][] result = new double[2 * range][2 * range][2 * range];
 		PerlinNoiseGenerator generator = new PerlinNoiseGenerator(seed);
 		World w = startLoc.getWorld();
-		//remove blocks accordingly and clear up middle in z-direction
-		for (int x = startLoc.getBlockX() - range; x <= startLoc.getBlockX()
+
+		int xOffset = startLoc.getBlockX() - range;
+		int yOffset = startLoc.getBlockY() - range;
+		int zOffset = startLoc.getBlockZ() - range;
+		// remove blocks accordingly
+		int a = 0;
+		for (int x = startLoc.getBlockX() - range; x < startLoc.getBlockX()
 				+ range; x++) {
-			for (int y = startLoc.getBlockY() - range; y <= startLoc
+			int b = 0;
+			for (int y = startLoc.getBlockY() - range; y < startLoc
 					.getBlockY() + range; y++) {
-				List<Integer> clearedBlocksZ = new ArrayList<Integer>();
-				for (int z = startLoc.getBlockZ() - range; z <= startLoc
+				int c = 0;
+				for (int z = startLoc.getBlockZ() - range; z < startLoc
 						.getBlockZ() + range; z++) {
-					double noise = generator.getNoise(x, y, z, octaves,
-							frequency, amplitude);
-					// System.out.println("Noise for " + x + "," + y + "," + z
-					// + " is " + noise);
+					double noise = generator.noise(x, y, z, octaves, frequency,
+							amplitude, true);
+					 System.out.println("Noise for " + x + "," + y + "," + z
+					 + " is " + noise);
+					result[a][b][c] = noise;
 					if (noise <= targetVal + fuzz && noise >= targetVal - fuzz) {
 						w.getBlockAt(new Location(w, x, y, z)).setType(
 								Material.AIR);
-						clearedBlocksZ.add(z);
-					}
-				}
-				Iterator<Integer> iter = clearedBlocksZ.iterator();
-				Integer current = null;
-				while (iter.hasNext()) {
-					if (current != null) {
-						int temp = iter.next();
-						if (Math.abs(temp - current) <= caveWidthLimit) {
-							for (int i = current + 1; i < temp; i++) {
-								w.getBlockAt(x, y, i).setType(Material.AIR);
-							}
-						}
-						current = temp;
-					} else {
-						current = iter.next();
-					}
-				}
 
+					}
+					c++;
+				}
+				b++;
 			}
+			a++;
 		}
-		//clear up in y direction
-		for (int x = startLoc.getBlockX() - range; x <= startLoc.getBlockX()
-				+ range; x++) {
-			for (int z = startLoc.getBlockZ() - range; z <= startLoc
-					.getBlockZ() + range; z++) {
-				List<Integer> clearedBlocksZ = new ArrayList<Integer>();
-				for (int y = startLoc.getBlockY() - range; y <= startLoc
-						.getBlockY() + range; y++) {
-					double noise = generator.getNoise(x, y, z, octaves,
-							frequency, amplitude);
-					// System.out.println("Noise for " + x + "," + y + "," + z
-					// + " is " + noise);
+
+		// clear z
+		for (int x = 0; x < result.length; x++) {
+			for (int y = 0; y < result.length; y++) {
+				int comparable = -1;
+				for (int z = 0; z < result.length; z++) {
+					double noise = result[x][y][z];
 					if (noise <= targetVal + fuzz && noise >= targetVal - fuzz) {
-						clearedBlocksZ.add(y);
-					}
-				}
-				Iterator<Integer> iter = clearedBlocksZ.iterator();
-				Integer current = null;
-				while (iter.hasNext()) {
-					if (current != null) {
-						int temp = iter.next();
-						if (Math.abs(temp - current) <= caveWidthLimit) {
-							for (int i = current + 1; i < temp; i++) {
-								w.getBlockAt(x, i, z).setType(Material.AIR);
+						if (comparable == -1) {
+							comparable = z;
+						} else {
+							if (Math.abs(comparable - z) <= caveWidthLimit) {
+								for (int i = Math.min(comparable, z); i < Math
+										.max(comparable, z); i++) {
+									w.getBlockAt(x + xOffset,y + yOffset, i + zOffset).setType(Material.AIR);
+								}
+								comparable = z;	
 							}
 						}
-						current = temp;
-					} else {
-						current = iter.next();
 					}
 				}
-
 			}
 		}
-		//clear up in x direction
-		for (int z = startLoc.getBlockZ() - range; z <= startLoc.getBlockZ()
-				+ range; z++) {
-			for (int y = startLoc.getBlockY() - range; y <= startLoc
-					.getBlockY() + range; y++) {
-				List<Integer> clearedBlocksZ = new ArrayList<Integer>();
-				for (int x = startLoc.getBlockX() - range; x <= startLoc
-						.getBlockX() + range; x++) {
-					double noise = generator.getNoise(x, y, z, octaves,
-							frequency, amplitude);
-					// System.out.println("Noise for " + x + "," + y + "," + z
-					// + " is " + noise);
+
+		// clear y
+		for (int x = 0; x < result.length; x++) {
+			for (int z = 0; z < result.length; z++) {
+				int comparable = -1;
+				for (int y = 0; y < result.length; y++) {
+					double noise = result[x][y][z];
 					if (noise <= targetVal + fuzz && noise >= targetVal - fuzz) {
-						w.getBlockAt(new Location(w, x, y, z)).setType(
-								Material.AIR);
-						clearedBlocksZ.add(z);
-					}
-				}
-				Iterator<Integer> iter = clearedBlocksZ.iterator();
-				Integer current = null;
-				while (iter.hasNext()) {
-					if (current != null) {
-						int temp = iter.next();
-						if (Math.abs(temp - current) <= caveWidthLimit) {
-							for (int i = current + 1; i < temp; i++) {
-								w.getBlockAt(i, y, z).setType(Material.AIR);
+						if (comparable == -1) {
+							comparable = y;
+						} else {
+							if (Math.abs(comparable - y) <= caveWidthLimit) {
+								for (int i = Math.min(comparable, y); i < Math
+										.max(comparable, y); i++) {
+									w.getBlockAt(x + xOffset, i + yOffset, z + zOffset).setType(Material.AIR);
+								}	
+								comparable = y;
 							}
 						}
-						current = temp;
-					} else {
-						current = iter.next();
 					}
 				}
-
 			}
 		}
+
+		// clear x
+		for (int z = 0; z < result.length; z++) {
+			for (int y = 0; y < result.length; y++) {
+				int comparable = -1;
+				for (int x = 0; x < result.length; x++) {
+					double noise = result[x][y][z];
+					if (noise <= targetVal + fuzz && noise >= targetVal - fuzz) {
+						if (comparable == -1) {
+							comparable = x;
+						} else {
+							if (Math.abs(comparable - x) <= caveWidthLimit) {
+								for (int i = Math.min(comparable, x); i < Math
+										.max(comparable, x); i++) {
+									w.getBlockAt(i + xOffset, y + yOffset, z + zOffset).setType(Material.AIR);
+								}
+								comparable = x;
+							}
+						}
+					}
+				}
+			}
+		}
+
 		System.out.println("done");
 		return false;
 	}

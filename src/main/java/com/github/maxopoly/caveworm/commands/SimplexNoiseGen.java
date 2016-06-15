@@ -55,10 +55,10 @@ public class SimplexNoiseGen extends PlayerCommand {
 				List<Integer> clearedBlocksZ = new ArrayList<Integer>();
 				for (int z = startLoc.getBlockZ() - range; z <= startLoc
 						.getBlockZ() + range; z++) {
-					double noise = generator.getNoise(x, y, z, octaves,
-							frequency, amplitude);
-					// System.out.println("Noise for " + x + "," + y + "," + z
-					// + " is " + noise);
+					double noise = generator.noise(x, y, z, octaves,
+							frequency, amplitude, true);
+					 System.out.println("Noise for " + x + "," + y + "," + z
+					 + " is " + noise);
 					if (noise <= targetVal + fuzz && noise >= targetVal - fuzz) {
 						w.getBlockAt(new Location(w, x, y, z)).setType(
 								Material.AIR);
@@ -91,8 +91,8 @@ public class SimplexNoiseGen extends PlayerCommand {
 				List<Integer> clearedBlocksZ = new ArrayList<Integer>();
 				for (int y = startLoc.getBlockY() - range; y <= startLoc
 						.getBlockY() + range; y++) {
-					double noise = generator.getNoise(x, y, z, octaves,
-							frequency, amplitude);
+					double noise = generator.noise(x, y, z, octaves,
+							frequency, amplitude, true);
 					// System.out.println("Noise for " + x + "," + y + "," + z
 					// + " is " + noise);
 					if (noise <= targetVal + fuzz && noise >= targetVal - fuzz) {
@@ -125,8 +125,8 @@ public class SimplexNoiseGen extends PlayerCommand {
 				List<Integer> clearedBlocksZ = new ArrayList<Integer>();
 				for (int x = startLoc.getBlockX() - range; x <= startLoc
 						.getBlockX() + range; x++) {
-					double noise = generator.getNoise(x, y, z, octaves,
-							frequency, amplitude);
+					double noise = generator.noise(x, y, z, octaves,
+							frequency, amplitude, true);
 					// System.out.println("Noise for " + x + "," + y + "," + z
 					// + " is " + noise);
 					if (noise <= targetVal + fuzz && noise >= targetVal - fuzz) {
