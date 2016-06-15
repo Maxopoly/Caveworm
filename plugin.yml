@@ -1,0 +1,7 @@
+name: ${project.name}
+main: com.github.maxopoly.caveworm.Caveworm
+author: Maxopoly
+version: ${project.version}
+depend: [CivModCore]
+commands:
+    cwgen:
