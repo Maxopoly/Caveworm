@@ -1,0 +1,45 @@
+wormBehavior:
+  wormType: Simplexworm
+  
+  #Amount of octaves in simplex function determining worm movement
+  xMovementOctaveCount: 3
+  yMovementOctaveCount: 3
+  zMovementOctaveCount: 3
+  
+  #Amplitudes for Simplex functions determining worm movement
+  xSpreadAmplitude: 2.0
+  zSpreadAmplitude: 2.0
+  xSpreadAmplitude: 2.0
+  
+  #Threshhold inside which the worm wont move
+  xSpreadThreshHold: 0.05
+  ySpreadThreshHold: 0.05
+  zSpreadThreshHold: 0.05
+  
+  #Frequency for Simplex functions determining worm movement
+  xSpreadFrequency: 0.1
+  ySpreadFrequency: 0.1
+  zSpreadFrequency: 0.1
+
+caveFormingBehavior:
+  formingType: SimplexSphere
+  
+  #Lower bound of the Simplex function for the radius of the sphere cleared around locations
+  lowerRadiusBound: 2
+  
+  #Upper bound of the Simplex function for the radius of the sphere cleared around locations
+  upperRadiusBound: 6
+  
+  #Frequency of the Simplex function determining the radius of the sphere spawned on a location
+  frequency: 0.1
+  
+  #Amplitude of the Simplex function determining the radius of the sphere spawned on a location. Note that while the underlying Simplex generator
+  #uses this parameter as amplitude, it will for a specified positive amplitude x only return values y with (x/2) >= y >= -(x/2)
+  amplitude: 2.0
+  
+  #Amount of octaves of the Simplex function determining the radius of the sphere spawned on a location (default 3)
+  octaves: 3
+  
+  #Material with which the emptied out space is replaced, use identifiers as specified here:
+  #https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html   (Default: AIR)
+  fillMaterial: AIR

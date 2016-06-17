@@ -10,10 +10,7 @@ public class CavewormCommandHandler extends CommandHandler {
 	
 	@Override
 	public void registerCommands() {
-		addCommands(new PerlinNoiseGen("cwperlin"));
-		addCommands(new SimplexNoiseGen("cwsimplex"));
+		addCommands(new GenerateCave("cwgen"));
+		addCommands(new ReloadConfig("cwreload"));
 	}
-	
-	
-
 }

@@ -4,6 +4,10 @@ author: Maxopoly
 version: ${project.version}
 depend: [CivModCore]
 commands:
-    cwperlin:
-    cwsimplex:
-    cw2dsimplex:
+    cwgen:
+      permission: cw.op
+    cwreload:
+      permission: cw.op
+permissions:
+    cw.op:
+        default: op
