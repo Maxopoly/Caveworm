@@ -26,15 +26,16 @@ public class SimplexSphereFormer implements CaveFormer {
 		this.octaves = octaves;
 		this.frequency = frequency;
 		this.amplitude = amplitude;
+		this.upperRadiusBound = upperRadiusBound;
+		this.lowerRadiusBound = lowerRadiusBound;
 	}
 
 	public void extendLocation(Location loc) {
 		double currentRange = generator.noise(loc.getX(), loc.getY(),
 				loc.getZ(), octaves, frequency, amplitude, true);
-		currentRange = (Math.abs(currentRange) * (upperRadiusBound - lowerRadiusBound))
-				+ lowerRadiusBound;
+		currentRange = (Math.abs(currentRange * (double) (upperRadiusBound - lowerRadiusBound)))
+				+ (double) lowerRadiusBound;
 		loc.getBlock().setType(replacementMaterial);
-		
 		for (double relX = loc.getX() - upperRadiusBound; relX <= loc
 				.getX() + upperRadiusBound; relX++) {
 			for (double relZ = loc.getZ() - upperRadiusBound; relZ <= loc

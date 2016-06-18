@@ -3,6 +3,7 @@ package com.github.maxopoly.caveworm.worms;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.List;
+import java.util.Random;
 
 import org.bukkit.Location;
 import org.bukkit.util.noise.SimplexNoiseGenerator;
@@ -41,8 +42,12 @@ public class SimplexNoiseWorm extends Worm {
 			double zSpreadFrequency, double xSpreadThreshHold,
 			double ySpreadThreshHold, double zSpreadThreshHold,
 			double xSpreadAmplitude, double ySpreadAmplitude,
-			double zSpreadAmplitude, int maximumLength) {
+			double zSpreadAmplitude, int maximumLength, long seedX, long seedY,
+			long seedZ) {
 		super(startingLocation, maximumLength);
+		this.xNoiseGenerator = new SimplexNoiseGenerator(seedX);
+		this.yNoiseGenerator = new SimplexNoiseGenerator(seedY);
+		this.zNoiseGenerator = new SimplexNoiseGenerator(seedZ);
 		this.xMovementOctaves = xMovementOctaves;
 		this.yMovementOctaves = yMovementOctaves;
 		this.zMovementOctaves = zMovementOctaves;
@@ -60,6 +65,21 @@ public class SimplexNoiseWorm extends Worm {
 		this.currentZ = startingLocation.getBlockZ();
 		this.currentLength = 0;
 		finished = false;
+	}
+
+	public SimplexNoiseWorm(Location startingLocation, int xMovementOctaves,
+			int yMovementOctaves, int zMovementOctaves,
+			double xSpreadFrequency, double ySpreadFrequency,
+			double zSpreadFrequency, double xSpreadThreshHold,
+			double ySpreadThreshHold, double zSpreadThreshHold,
+			double xSpreadAmplitude, double ySpreadAmplitude,
+			double zSpreadAmplitude, int maximumLength) {
+		this(startingLocation, xMovementOctaves, yMovementOctaves,
+				zMovementOctaves, xSpreadFrequency, ySpreadFrequency,
+				zSpreadFrequency, xSpreadThreshHold, ySpreadThreshHold,
+				zSpreadThreshHold, xSpreadAmplitude, ySpreadAmplitude,
+				zSpreadAmplitude, maximumLength, new Random().nextLong(),
+				new Random().nextLong(), new Random().nextLong());
 	}
 
 	public boolean hasNext() {
@@ -103,22 +123,26 @@ public class SimplexNoiseWorm extends Worm {
 		if (z <= (-1 * zSpreadThreshHold)) {
 			currentZ--;
 		}
-		//increment length counter
+		// increment length counter
 		currentLength++;
-		//if none of the coords changed or maximum length was reached, we are done
+		// if none of the coords changed or maximum length was reached, we are
+		// done
 		if ((currentX == result.getBlockX() && currentY == result.getBlockY() && currentZ == result
 				.getBlockZ()) || (currentLength >= maximumLength)) {
 			finished = true;
 		}
 		return result;
 	}
-	
-	public List <Location> getAllLocations() throws ConcurrentModificationException {
-		if(currentX != startingLocation.getBlockX() || currentY != startingLocation.getBlockY() || currentZ != startingLocation.getBlockZ()) {
+
+	public List<Location> getAllLocations()
+			throws ConcurrentModificationException {
+		if (currentX != startingLocation.getBlockX()
+				|| currentY != startingLocation.getBlockY()
+				|| currentZ != startingLocation.getBlockZ()) {
 			throw new ConcurrentModificationException();
 		}
-		List <Location> result = new ArrayList<Location>();
-		while(hasNext()) {
+		List<Location> result = new ArrayList<Location>();
+		while (hasNext()) {
 			result.add(next());
 		}
 		return result;
