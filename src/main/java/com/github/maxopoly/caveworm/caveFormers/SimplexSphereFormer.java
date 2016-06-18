@@ -8,69 +8,129 @@ import org.bukkit.util.noise.SimplexNoiseGenerator;
 
 public class SimplexSphereFormer implements CaveFormer {
 
-	private SimplexNoiseGenerator generator;
+	private SimplexNoiseGenerator xGenerator;
+	private SimplexNoiseGenerator yGenerator;
+	private SimplexNoiseGenerator zGenerator;
 
 	private Material replacementMaterial;
-
-	private double lowerRadiusBound;
-	private double upperRadiusBound;
-	private int octaves;
-	private double frequency;
 	private double amplitude;
 
-	public SimplexSphereFormer(Material replacementMaterial,
-			double lowerRadiusBound, double upperRadiusBound, int octaves,
-			double frequency, double amplitude) {
+	private int xOctaves;
+	private int yOctaves;
+	private int zOctaves;
+
+	private double xSpreadFrequency;
+	private double ySpreadFrequency;
+	private double zSpreadFrequency;
+
+	private double xUpperRadiusBound;
+	private double yUpperRadiusBound;
+	private double zUpperRadiusBound;
+
+	private double xLowerRadiusBound;
+	private double yLowerRadiusBound;
+	private double zLowerRadiusBound;
+
+	public SimplexSphereFormer(Material replacementMaterial, int xOctaves,
+			int yOctaves, int zOctaves, double xSpreadFrequency,
+			double ySpreadFrequency, double zSpreadFrequency,
+			double xUpperRadiusBound, double yUpperRadiusBound,
+			double zUpperRadiusBound, double xLowerRadiusBound,
+			double yLowerRadiusBound, double zLowerRadiusBound, long xSeed,
+			long ySeed, long zSeed) {
 		this.replacementMaterial = replacementMaterial;
-		generator = new SimplexNoiseGenerator(new Random());
-		this.octaves = octaves;
-		this.frequency = frequency;
-		this.amplitude = amplitude;
-		this.upperRadiusBound = upperRadiusBound;
-		this.lowerRadiusBound = lowerRadiusBound;
+		this.amplitude = 2.0; // hardcoded to ensure it properly scales with the
+								// bounds
+		this.xGenerator = new SimplexNoiseGenerator(xSeed);
+		this.yGenerator = new SimplexNoiseGenerator(ySeed);
+		this.zGenerator = new SimplexNoiseGenerator(zSeed);
+		this.xOctaves = xOctaves;
+		this.yOctaves = yOctaves;
+		this.zOctaves = zOctaves;
+		this.xSpreadFrequency = xSpreadFrequency;
+		this.ySpreadFrequency = ySpreadFrequency;
+		this.zSpreadFrequency = zSpreadFrequency;
+		this.xUpperRadiusBound = xUpperRadiusBound;
+		this.yUpperRadiusBound = yUpperRadiusBound;
+		this.zUpperRadiusBound = zUpperRadiusBound;
+		this.xLowerRadiusBound = xLowerRadiusBound;
+		this.yLowerRadiusBound = yLowerRadiusBound;
+		this.zLowerRadiusBound = zLowerRadiusBound;
+	}
+
+	public SimplexSphereFormer(Material replacementMaterial, int xOctaves,
+			int yOctaves, int zOctaves, double xSpreadFrequency,
+			double ySpreadFrequency, double zSpreadFrequency,
+			double xUpperRadiusBound, double yUpperRadiusBound,
+			double zUpperRadiusBound, double xLowerRadiusBound,
+			double yLowerRadiusBound, double zLowerRadiusBound) {
+		this(replacementMaterial, xOctaves, yOctaves, zOctaves,
+				xSpreadFrequency, ySpreadFrequency, zSpreadFrequency,
+				xUpperRadiusBound, yUpperRadiusBound, zUpperRadiusBound,
+				xLowerRadiusBound, yLowerRadiusBound, zLowerRadiusBound,
+				new Random().nextLong(), new Random().nextLong(), new Random()
+						.nextLong());
 	}
 
 	public void extendLocation(Location loc) {
-		double currentRange = generator.noise(loc.getX(), loc.getY(),
-				loc.getZ(), octaves, frequency, amplitude, true);
-		currentRange = (Math.abs(currentRange * (double) (upperRadiusBound - lowerRadiusBound)))
-				+ (double) lowerRadiusBound;
+		// calculate x distance blocks must be within
+		double currentXRange = xGenerator.noise(loc.getX(), loc.getY(),
+				loc.getZ(), xOctaves, xSpreadFrequency, amplitude, true);
+		currentXRange = (Math.abs(currentXRange
+				* (double) (xUpperRadiusBound - xLowerRadiusBound)))
+				+ (double) xLowerRadiusBound;
+		// calculate y distance blocks must be within
+		double currentYRange = yGenerator.noise(loc.getX(), loc.getY(),
+				loc.getZ(), yOctaves, ySpreadFrequency, amplitude, true);
+		currentYRange = (Math.abs(currentXRange
+				* (double) (yUpperRadiusBound - yLowerRadiusBound)))
+				+ (double) yLowerRadiusBound;
+		// calculate z distance blocks must be within
+		double currentZRange = zGenerator.noise(loc.getX(), loc.getY(),
+				loc.getZ(), zOctaves, zSpreadFrequency, amplitude, true);
+		currentZRange = (Math.abs(currentXRange
+				* (double) (zUpperRadiusBound - zLowerRadiusBound)))
+				+ (double) zLowerRadiusBound;
+		// always clear center block
 		loc.getBlock().setType(replacementMaterial);
-		for (double relX = loc.getX() - upperRadiusBound; relX <= loc
-				.getX() + upperRadiusBound; relX++) {
-			for (double relZ = loc.getZ() - upperRadiusBound; relZ <= loc
-					.getZ() + upperRadiusBound; relZ++) {
-				Location temp = new Location(loc.getWorld(), relX,
-						loc.getY(), relZ);
-				if (loc.distance(temp) <= currentRange) {
+		// clear circle in X-Z direction
+		for (double relX = loc.getX() - xUpperRadiusBound; relX <= loc.getX()
+				+ xUpperRadiusBound; relX++) {
+			for (double relZ = loc.getZ() - zUpperRadiusBound; relZ <= loc
+					.getZ() + zUpperRadiusBound; relZ++) {
+				Location temp = new Location(loc.getWorld(), relX, loc.getY(),
+						relZ);
+				if (Math.abs(loc.getX() - relX) <= currentXRange
+						&& Math.abs(loc.getZ() - relZ) <= currentZRange) {
 					temp.getBlock().setType(replacementMaterial);
 				}
 			}
 		}
-		
-		for (double relY = loc.getY() - upperRadiusBound; relY <= loc
-				.getY() + upperRadiusBound; relY++) {
-			for (double relZ = loc.getZ() - upperRadiusBound; relZ <= loc
-					.getZ() + upperRadiusBound; relZ++) {
-				Location temp = new Location(loc.getWorld(), loc.getX(),
-						relY, relZ);
-				if (loc.distance(temp) <= currentRange) {
+		// clear circle in Y-Z direction
+		for (double relY = loc.getY() - yUpperRadiusBound; relY <= loc.getY()
+				+ yUpperRadiusBound; relY++) {
+			for (double relZ = loc.getZ() - zUpperRadiusBound; relZ <= loc
+					.getZ() + zUpperRadiusBound; relZ++) {
+				Location temp = new Location(loc.getWorld(), loc.getX(), relY,
+						relZ);
+				if (Math.abs(loc.getY() - relY) <= currentYRange
+						&& Math.abs(loc.getZ() - relZ) <= currentZRange) {
 					temp.getBlock().setType(replacementMaterial);
 				}
 			}
 		}
-		
-		for (double relY = loc.getY() - upperRadiusBound; relY <= loc
-				.getY() + upperRadiusBound; relY++) {
-			for (double relX = loc.getX() - upperRadiusBound; relX <= loc
-					.getX() + upperRadiusBound; relX++) {
-				Location temp = new Location(loc.getWorld(), relX,
-						relY, loc.getZ());
-				if (loc.distance(temp) <= currentRange) {
+		// clear circle in X-Y direction
+		for (double relY = loc.getY() - yUpperRadiusBound; relY <= loc.getY()
+				+ yUpperRadiusBound; relY++) {
+			for (double relX = loc.getX() - xUpperRadiusBound; relX <= loc
+					.getX() + xUpperRadiusBound; relX++) {
+				Location temp = new Location(loc.getWorld(), relX, relY,
+						loc.getZ());
+				if (Math.abs(loc.getY() - relY) <= currentYRange
+						&& Math.abs(loc.getX() - relX) <= currentXRange) {
 					temp.getBlock().setType(replacementMaterial);
 				}
 			}
 		}
 	}
-
 }

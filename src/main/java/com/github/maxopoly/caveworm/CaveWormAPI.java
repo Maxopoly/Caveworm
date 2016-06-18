@@ -20,7 +20,10 @@ public class CaveWormAPI {
 					config.getYSpreadThreshHold(),
 					config.getZSpreadThreshHold(),
 					config.getXSpreadAmplitude(), config.getYSpreadAmplitude(),
-					config.getYSpreadAmplitude(), length);
+					config.getYSpreadAmplitude(), length,
+					config.getXWormMovementSeed(),
+					config.getYWormMovementSeed(),
+					config.getZWormMovementSeed());
 		default:
 			return null;
 		}
@@ -31,10 +34,20 @@ public class CaveWormAPI {
 		switch (config.getFormingType()) {
 		case "SimplexSphere":
 			return new SimplexSphereFormer(config.getFormingFillMaterial(),
-					config.getLowerFormingRadiusBound(),
-					config.getUpperFormingRadiusBound(),
-					config.getFormingOctaveCount(),
-					config.getFormingFrequency(), config.getFormingAmplitude());
+					config.getXFormingOctaveCount(),
+					config.getYFormingOctaveCount(),
+					config.getZFormingOctaveCount(),
+					config.getXFormingFrequency(),
+					config.getYFormingFrequency(),
+					config.getZFormingFrequency(),
+					config.getXUpperFormingRadiusBound(),
+					config.getYUpperFormingRadiusBound(),
+					config.getZUpperFormingRadiusBound(),
+					config.getXLowerFormingRadiusBound(),
+					config.getYLowerFormingRadiusBound(),
+					config.getZLowerFormingRadiusBound(),
+					config.getXFillingSeed(), config.getYFillingSeed(),
+					config.getZFillingSeed());
 		default:
 			return null;
 		}

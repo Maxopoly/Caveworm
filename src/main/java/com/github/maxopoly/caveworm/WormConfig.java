@@ -1,16 +1,24 @@
 package com.github.maxopoly.caveworm;
 
+import java.util.Random;
+
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
 public class WormConfig {
+	
+	private Random seedPicker;
 
 	private String wormType;
 
 	private int xMovementOctaves;
 	private int yMovementOctaves;
 	private int zMovementOctaves;
+	
+	private long xMovementSeed;
+	private long yMovementSeed;
+	private long zMovementSeed;
 
 	private double xSpreadFrequency;
 	private double ySpreadFrequency;
@@ -25,16 +33,30 @@ public class WormConfig {
 	private double zSpreadThreshHold;
 
 	private String caveFormingType;
-
-	private double lowerFormingRadiusBound;
-	private double upperFormingRadiusBound;
 	private Material caveFillMaterial;
 
-	private double formingSimplexFrequency;
-	private double formingSimplexAmplitude;
-	private int formingSimplexOctaves;
+	private double xLowerFormingRadiusBound;
+	private double yLowerFormingRadiusBound;
+	private double zLowerFormingRadiusBound;
+	
+	private double xUpperFormingRadiusBound;
+	private double yUpperFormingRadiusBound;
+	private double zUpperFormingRadiusBound;
+
+	private double xFormingSimplexFrequency;
+	private double yFormingSimplexFrequency;
+	private double zFormingSimplexFrequency;
+	
+	private int xFormingSimplexOctaves;
+	private int yFormingSimplexOctaves;
+	private int zFormingSimplexOctaves;
+	
+	private long xFormingSimplexSeed;
+	private long yFormingSimplexSeed;
+	private long zFormingSimplexSeed;
 
 	public void parse(Caveworm plugin) {
+		seedPicker = new Random();
 		plugin.saveDefaultConfig();
 		plugin.reloadConfig();
 		FileConfiguration config = plugin.getConfig();
@@ -76,6 +98,9 @@ public class WormConfig {
 					0.1);
 			zSpreadFrequency = behaviorSection.getDouble("zSpreadFrequency",
 					0.1);
+			xMovementSeed = behaviorSection.getLong("xSeed", -1);
+			yMovementSeed = behaviorSection.getLong("ySeed", -1);
+			zMovementSeed = behaviorSection.getLong("zSeed", -1);
 		}
 		// parse more worm types here
 
@@ -90,15 +115,30 @@ public class WormConfig {
 		caveFormingType = formingSection.getString("formingType",
 				"SimplexSphere");
 		if (caveFormingType.equals("SimplexSphere")) {
-			lowerFormingRadiusBound = formingSection.getDouble(
-					"lowerRadiusBound", 2);
-			upperFormingRadiusBound = formingSection.getDouble(
-					"upperRadiusBound", 6);
-			formingSimplexFrequency = formingSection
-					.getDouble("frequency", 0.1);
-			formingSimplexAmplitude = formingSection
-					.getDouble("amplitude", 2.0);
-			formingSimplexOctaves = formingSection.getInt("octaves", 3);
+			xLowerFormingRadiusBound = formingSection.getDouble(
+					"xLowerRadiusBound", 2);
+			yLowerFormingRadiusBound = formingSection.getDouble(
+					"yLowerRadiusBound", 2);
+			zLowerFormingRadiusBound = formingSection.getDouble(
+					"zLowerRadiusBound", 2);
+			xUpperFormingRadiusBound = formingSection.getDouble(
+					"xUpperRadiusBound", 6);
+			yUpperFormingRadiusBound = formingSection.getDouble(
+					"yUpperRadiusBound", 6);
+			zUpperFormingRadiusBound = formingSection.getDouble(
+					"zUpperRadiusBound", 6);
+			xFormingSimplexFrequency = formingSection
+					.getDouble("xFrequency", 0.1);
+			yFormingSimplexFrequency = formingSection
+					.getDouble("yFrequency", 0.1);
+			zFormingSimplexFrequency = formingSection
+					.getDouble("zFrequency", 0.1);
+			xFormingSimplexOctaves = formingSection.getInt("xOctaves", 3);
+			yFormingSimplexOctaves = formingSection.getInt("yOctaves", 3);
+			zFormingSimplexOctaves = formingSection.getInt("zOctaves", 3);
+			xFormingSimplexSeed = formingSection.getLong("xSeed", -1);
+			yFormingSimplexSeed = formingSection.getLong("ySeed", -1);
+			zFormingSimplexSeed = formingSection.getLong("zSeed", -1);
 			String mat = formingSection.getString("fillMaterial", "AIR");
 			try {
 				caveFillMaterial = Material.valueOf(mat);
@@ -174,23 +214,75 @@ public class WormConfig {
 		return caveFillMaterial;
 	}
 
-	public double getFormingFrequency() {
-		return formingSimplexFrequency;
-	}
-
-	public double getFormingAmplitude() {
-		return formingSimplexAmplitude;
-	}
-
-	public int getFormingOctaveCount() {
-		return formingSimplexOctaves;
+	public double getXFormingFrequency() {
+		return xFormingSimplexFrequency;
 	}
 	
-	public double getLowerFormingRadiusBound() {
-		return lowerFormingRadiusBound;
+	public double getYFormingFrequency() {
+		return yFormingSimplexFrequency;
 	}
 	
-	public double getUpperFormingRadiusBound() {
-		return upperFormingRadiusBound;
+	public double getZFormingFrequency() {
+		return zFormingSimplexFrequency;
+	}
+
+	public int getXFormingOctaveCount() {
+		return xFormingSimplexOctaves;
+	}
+	
+	public int getYFormingOctaveCount() {
+		return yFormingSimplexOctaves;
+	}
+	
+	public int getZFormingOctaveCount() {
+		return zFormingSimplexOctaves;
+	}
+	
+	public double getXLowerFormingRadiusBound() {
+		return xLowerFormingRadiusBound;
+	}
+	
+	public double getYLowerFormingRadiusBound() {
+		return yLowerFormingRadiusBound;
+	}
+	
+	public double getZLowerFormingRadiusBound() {
+		return zLowerFormingRadiusBound;
+	}
+	
+	public double getXUpperFormingRadiusBound() {
+		return xUpperFormingRadiusBound;
+	}
+	
+	public double getYUpperFormingRadiusBound() {
+		return yUpperFormingRadiusBound;
+	}
+	
+	public double getZUpperFormingRadiusBound() {
+		return zUpperFormingRadiusBound;
+	}
+	
+	public long getXWormMovementSeed() {
+		return (xMovementSeed == -1) ? seedPicker.nextLong() : xMovementSeed;
+	}
+	
+	public long getYWormMovementSeed() {
+		return (yMovementSeed == -1) ? seedPicker.nextLong() : yMovementSeed;
+	}
+	
+	public long getZWormMovementSeed() {
+		return (zMovementSeed == -1) ? seedPicker.nextLong() : zMovementSeed;
+	}
+	
+	public long getXFillingSeed() {
+		return (xFormingSimplexSeed == -1) ? seedPicker.nextLong() : xFormingSimplexSeed;
+	}
+	
+	public long getYFillingSeed() {
+		return (yFormingSimplexSeed == -1) ? seedPicker.nextLong() : yFormingSimplexSeed;
+	}
+	
+	public long getZFillingSeed() {
+		return (zFormingSimplexSeed == -1) ? seedPicker.nextLong() : zFormingSimplexSeed;
 	}
 }
