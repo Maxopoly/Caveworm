@@ -15,7 +15,7 @@ public class GenerateCave extends PlayerCommand {
 	public GenerateCave(String name) {
 		super(name);
 		setIdentifier("cwgen");
-		setDescription("Begins spawning a cave at your current location");
+		setDescription("Spawns a cave at your current location");
 		setUsage("/cwgen <length>");
 		setArguments(1, 1);
 	}

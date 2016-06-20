@@ -2,13 +2,17 @@ package com.github.maxopoly.caveworm.worms;
 
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import org.bukkit.Location;
 import org.bukkit.util.noise.SimplexNoiseGenerator;
 
 public class SimplexNoiseWorm extends Worm {
+
+	private Set<Location> currentPath;
 
 	private SimplexNoiseGenerator xNoiseGenerator;
 	private SimplexNoiseGenerator yNoiseGenerator;
@@ -63,6 +67,7 @@ public class SimplexNoiseWorm extends Worm {
 		this.currentX = startingLocation.getBlockX();
 		this.currentY = startingLocation.getBlockY();
 		this.currentZ = startingLocation.getBlockZ();
+		currentPath = new HashSet<Location>();
 		this.currentLength = 0;
 		finished = false;
 	}
@@ -125,11 +130,18 @@ public class SimplexNoiseWorm extends Worm {
 		}
 		// increment length counter
 		currentLength++;
-		// if none of the coords changed or maximum length was reached, we are
-		// done
-		if ((currentX == result.getBlockX() && currentY == result.getBlockY() && currentZ == result
-				.getBlockZ()) || (currentLength >= maximumLength)) {
+		//if maximum length was reached, stop
+		if (currentLength >= maximumLength) {
 			finished = true;
+		}
+		// if this point was already reached, we are inside a cycle and can stop
+		// earlier
+		Location nextOne = new Location(startingLocation.getWorld(), currentX,
+				currentY, currentZ);
+		if (currentPath.contains(nextOne)) {
+			finished = true;
+		} else {
+			currentPath.add(nextOne);
 		}
 		return result;
 	}
@@ -146,6 +158,10 @@ public class SimplexNoiseWorm extends Worm {
 			result.add(next());
 		}
 		return result;
+	}
+	
+	public int getCurrentLength() {
+		return currentLength;
 	}
 
 }

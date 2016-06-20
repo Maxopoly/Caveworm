@@ -3,6 +3,7 @@ package com.github.maxopoly.caveworm;
 import org.bukkit.Location;
 
 import com.github.maxopoly.caveworm.caveFormers.SimplexSphereFormer;
+import com.github.maxopoly.caveworm.distribution.GlobalDistributor;
 import com.github.maxopoly.caveworm.worms.SimplexNoiseWorm;
 import com.github.maxopoly.caveworm.worms.Worm;
 
@@ -45,9 +46,10 @@ public class CaveWormAPI {
 					config.getZUpperFormingRadiusBound(),
 					config.getXLowerFormingRadiusBound(),
 					config.getYLowerFormingRadiusBound(),
-					config.getZLowerFormingRadiusBound(),
-					config.getXFillingSeed(), config.getYFillingSeed(),
-					config.getZFillingSeed());
+					config.getZLowerFormingRadiusBound(), config.getXZSlices(),
+					config.getXYSlices(), config.getYZSlices(),
+					config.getIgnoreMaterials(), config.getXFillingSeed(),
+					config.getYFillingSeed(), config.getZFillingSeed());
 		default:
 			return null;
 		}
@@ -58,5 +60,25 @@ public class CaveWormAPI {
 		while (w.hasNext()) {
 			getCaveFormer().extendLocation(w.next());
 		}
+	}
+
+	public static GlobalDistributor getDistributer() {
+		WormConfig config = Caveworm.getWormConfig();
+		if (config.getDistributionArea() == null) {
+			Caveworm.getInstance().warning(
+					"No area loaded, can't get distributor");
+			return null;
+		}
+		GlobalDistributor dist = new GlobalDistributor(
+				config.getDistributionArea(),
+				config.getLowerDistributionYBound(),
+				config.getUpperDistributionYBound(),
+				config.getMinimumDistributionSurfaceDistance(),
+				config.getDistributionSeedChance(),
+				config.getLowerDistributionCaveLengthBound(),
+				config.getUpperDistributionCaveLengthBound(),
+				config.getMinimumDistributionCaveLength(),
+				config.getDistributionSeed());
+		return dist;
 	}
 }

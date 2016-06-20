@@ -12,5 +12,6 @@ public class CavewormCommandHandler extends CommandHandler {
 	public void registerCommands() {
 		addCommands(new GenerateCave("cwgen"));
 		addCommands(new ReloadConfig("cwreload"));
+		addCommands(new SeedArea("cwseed"));
 	}
 }

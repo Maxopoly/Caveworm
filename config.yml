@@ -10,13 +10,13 @@ wormBehavior:
   
   #Amplitudes for Simplex functions determining worm movement
   xSpreadAmplitude: 2.0
-  zSpreadAmplitude: 2.0
-  xSpreadAmplitude: 2.0
+  ySpreadAmpltitude: 2.0
+  zSpreadAmpltitude: 2.0
   
   #Threshhold inside which the worm wont move
-  xSpreadThreshHold: 0.05
+  xSpreadThreshHold: 0.08
   ySpreadThreshHold: 0.05
-  zSpreadThreshHold: 0.05
+  zSpreadThreshHold: 0.08
   
   #Frequency for Simplex functions determining worm movement
   xSpreadFrequency: 0.1
@@ -44,12 +44,21 @@ caveFormingBehavior:
   #Frequency of the Simplex function determining the range in which all blocks in the given direction are cleared around the center cave block
   xFrequency: 0.1
   yFrequency: 0.1
-  xFrequency: 0.1
+  zFrequency: 0.1
   
   #Amount of octaves of the Simplex function determining the range in which all blocks in the given direction are cleared around the center cave block
   xOctaves: 3
   yOctaves: 3
   zOctaves: 3
+  
+  #Additional slices besides the main one which will be cleared out in each 2 dimensional level
+  xzSlices: 0
+  xySlices: 0
+  yzSlices: 0
+  
+  #Materials that wont be replaced when generating caves, use spigot material identifiers here
+  ignoreMaterials:
+   - BEDROCK
   
   #Seed used for the generator determining spread for each dimension, -1 for random seed
   xSeed: -1
@@ -59,3 +68,21 @@ caveFormingBehavior:
   #Material with which the emptied out space is replaced, use identifiers as specified here:
   #https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html   (Default: AIR)
   fillMaterial: AIR
+ 
+distribution:
+  area:
+    type: ELLIPSE
+    world: world
+    center:
+      x: 0
+      z: 0
+    xSize: 500
+    zSize: 500
+  lowerYBound: 0
+  upperYBound: 255
+  minimumSurfaceDistance: 20
+  seedChance: 0.5
+  lowerCaveLengthBound: 50
+  upperCaveLengthBound: 250
+  minimumCaveLength: 30
+  seed: -1

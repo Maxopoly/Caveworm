@@ -8,6 +8,8 @@ commands:
       permission: cw.op
     cwreload:
       permission: cw.op
+    cwseed:
+      permission: cw.op
 permissions:
     cw.op:
         default: op

@@ -1,9 +1,12 @@
 package com.github.maxopoly.caveworm.caveFormers;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Random;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.util.noise.SimplexNoiseGenerator;
 
 public class SimplexSphereFormer implements CaveFormer {
@@ -14,6 +17,7 @@ public class SimplexSphereFormer implements CaveFormer {
 
 	private Material replacementMaterial;
 	private double amplitude;
+	private Collection<Material> ignoreMaterials;
 
 	private int xOctaves;
 	private int yOctaves;
@@ -31,13 +35,18 @@ public class SimplexSphereFormer implements CaveFormer {
 	private double yLowerRadiusBound;
 	private double zLowerRadiusBound;
 
+	private int xzSlices;
+	private int xySlices;
+	private int yzSlices;
+
 	public SimplexSphereFormer(Material replacementMaterial, int xOctaves,
 			int yOctaves, int zOctaves, double xSpreadFrequency,
 			double ySpreadFrequency, double zSpreadFrequency,
 			double xUpperRadiusBound, double yUpperRadiusBound,
 			double zUpperRadiusBound, double xLowerRadiusBound,
-			double yLowerRadiusBound, double zLowerRadiusBound, long xSeed,
-			long ySeed, long zSeed) {
+			double yLowerRadiusBound, double zLowerRadiusBound, int xzSlices,
+			int xySlices, int yzSlices, Collection<Material> materialsToIgnore,
+			long xSeed, long ySeed, long zSeed) {
 		this.replacementMaterial = replacementMaterial;
 		this.amplitude = 2.0; // hardcoded to ensure it properly scales with the
 								// bounds
@@ -56,6 +65,10 @@ public class SimplexSphereFormer implements CaveFormer {
 		this.xLowerRadiusBound = xLowerRadiusBound;
 		this.yLowerRadiusBound = yLowerRadiusBound;
 		this.zLowerRadiusBound = zLowerRadiusBound;
+		this.xySlices = xySlices;
+		this.xzSlices = xzSlices;
+		this.yzSlices = yzSlices;
+		this.ignoreMaterials = materialsToIgnore;
 	}
 
 	public SimplexSphereFormer(Material replacementMaterial, int xOctaves,
@@ -63,12 +76,14 @@ public class SimplexSphereFormer implements CaveFormer {
 			double ySpreadFrequency, double zSpreadFrequency,
 			double xUpperRadiusBound, double yUpperRadiusBound,
 			double zUpperRadiusBound, double xLowerRadiusBound,
-			double yLowerRadiusBound, double zLowerRadiusBound) {
+			double yLowerRadiusBound, double zLowerRadiusBound, int xzSlices,
+			int xySlices, int yzSlices, Collection<Material> materialsToIgnore) {
 		this(replacementMaterial, xOctaves, yOctaves, zOctaves,
 				xSpreadFrequency, ySpreadFrequency, zSpreadFrequency,
 				xUpperRadiusBound, yUpperRadiusBound, zUpperRadiusBound,
 				xLowerRadiusBound, yLowerRadiusBound, zLowerRadiusBound,
-				new Random().nextLong(), new Random().nextLong(), new Random()
+				xzSlices, xySlices, yzSlices, materialsToIgnore, new Random()
+						.nextLong(), new Random().nextLong(), new Random()
 						.nextLong());
 	}
 
@@ -82,55 +97,87 @@ public class SimplexSphereFormer implements CaveFormer {
 		// calculate y distance blocks must be within
 		double currentYRange = yGenerator.noise(loc.getX(), loc.getY(),
 				loc.getZ(), yOctaves, ySpreadFrequency, amplitude, true);
-		currentYRange = (Math.abs(currentXRange
+		currentYRange = (Math.abs(currentYRange
 				* (double) (yUpperRadiusBound - yLowerRadiusBound)))
 				+ (double) yLowerRadiusBound;
 		// calculate z distance blocks must be within
 		double currentZRange = zGenerator.noise(loc.getX(), loc.getY(),
 				loc.getZ(), zOctaves, zSpreadFrequency, amplitude, true);
-		currentZRange = (Math.abs(currentXRange
+		currentZRange = (Math.abs(currentZRange
 				* (double) (zUpperRadiusBound - zLowerRadiusBound)))
 				+ (double) zLowerRadiusBound;
 		// always clear center block
-		loc.getBlock().setType(replacementMaterial);
+		clearBlock(loc);
 		// clear circle in X-Z direction
-		for (double relX = loc.getX() - xUpperRadiusBound; relX <= loc.getX()
-				+ xUpperRadiusBound; relX++) {
-			for (double relZ = loc.getZ() - zUpperRadiusBound; relZ <= loc
-					.getZ() + zUpperRadiusBound; relZ++) {
-				Location temp = new Location(loc.getWorld(), relX, loc.getY(),
-						relZ);
-				if (Math.abs(loc.getX() - relX) <= currentXRange
-						&& Math.abs(loc.getZ() - relZ) <= currentZRange) {
-					temp.getBlock().setType(replacementMaterial);
+		for (int yOffSet = 0; yOffSet <= xzSlices; yOffSet++) {
+			for (double relX = loc.getX() - xUpperRadiusBound; relX <= loc
+					.getX() + xUpperRadiusBound; relX++) {
+				for (double relZ = loc.getZ() - zUpperRadiusBound; relZ <= loc
+						.getZ() + zUpperRadiusBound; relZ++) {
+					Location temp = new Location(loc.getWorld(), relX,
+							loc.getY() + yOffSet, relZ);
+					double xDistance = loc.getX() - temp.getX();
+					double zDistance = loc.getZ() - temp.getZ();
+					// check whether point is inside ellipse
+					if (((xDistance * xDistance) / (currentXRange * currentXRange))
+							+ ((yOffSet * yOffSet) / (currentYRange * currentYRange))
+							+ ((zDistance * zDistance) / (currentZRange * currentZRange)) <= 1) {
+						clearBlock(temp);
+						clearBlock(new Location(loc.getWorld(), relX,
+								loc.getY() - yOffSet, relZ));
+					}
 				}
 			}
 		}
 		// clear circle in Y-Z direction
-		for (double relY = loc.getY() - yUpperRadiusBound; relY <= loc.getY()
-				+ yUpperRadiusBound; relY++) {
-			for (double relZ = loc.getZ() - zUpperRadiusBound; relZ <= loc
-					.getZ() + zUpperRadiusBound; relZ++) {
-				Location temp = new Location(loc.getWorld(), loc.getX(), relY,
-						relZ);
-				if (Math.abs(loc.getY() - relY) <= currentYRange
-						&& Math.abs(loc.getZ() - relZ) <= currentZRange) {
-					temp.getBlock().setType(replacementMaterial);
+		for (int xOffSet = 0; xOffSet <= yzSlices; xOffSet++) {
+			for (double relY = loc.getY() - yUpperRadiusBound; relY <= loc
+					.getY() + yUpperRadiusBound; relY++) {
+				for (double relZ = loc.getZ() - zUpperRadiusBound; relZ <= loc
+						.getZ() + zUpperRadiusBound; relZ++) {
+					Location temp = new Location(loc.getWorld(), loc.getX()
+							+ xOffSet, relY, relZ);
+					double yDistance = loc.getY() - temp.getY();
+					double zDistance = loc.getZ() - temp.getZ();
+					// check whether point is inside ellipse
+					if (((xOffSet * xOffSet) / (currentXRange * currentXRange))
+							+ ((yDistance * yDistance) / (currentYRange * currentYRange))
+							+ ((zDistance * zDistance) / (currentZRange * currentZRange)) <= 1) {
+						clearBlock(temp);
+						clearBlock(new Location(loc.getWorld(), loc.getX()
+								- xOffSet, relY, relZ));
+					}
 				}
 			}
 		}
 		// clear circle in X-Y direction
-		for (double relY = loc.getY() - yUpperRadiusBound; relY <= loc.getY()
-				+ yUpperRadiusBound; relY++) {
+		for (int zOffSet = 0; zOffSet <= xySlices; zOffSet++) {
 			for (double relX = loc.getX() - xUpperRadiusBound; relX <= loc
 					.getX() + xUpperRadiusBound; relX++) {
-				Location temp = new Location(loc.getWorld(), relX, relY,
-						loc.getZ());
-				if (Math.abs(loc.getY() - relY) <= currentYRange
-						&& Math.abs(loc.getX() - relX) <= currentXRange) {
-					temp.getBlock().setType(replacementMaterial);
+				for (double relY = loc.getY() - yUpperRadiusBound; relY <= loc
+						.getY() + yUpperRadiusBound; relY++) {
+					Location temp = new Location(loc.getWorld(), relX, relY,
+							loc.getZ() + zOffSet);
+					double yDistance = loc.getY() - temp.getY();
+					double xDistance = loc.getX() - temp.getX();
+					// check whether point is inside ellipse
+					if (((xDistance * xDistance) / (currentXRange * currentXRange))
+							+ ((yDistance * yDistance) / (currentYRange * currentYRange))
+							+ ((zOffSet * zOffSet) / (currentZRange * currentZRange)) <= 1) {
+						clearBlock(temp);
+						clearBlock(new Location(loc.getWorld(), relX, relY,
+								loc.getZ() - zOffSet));
+					}
 				}
 			}
+
+		}
+	}
+
+	private void clearBlock(Location loc) {
+		Block b = loc.getBlock();
+		if (!ignoreMaterials.contains(b.getType())) {
+			b.setType(replacementMaterial);
 		}
 	}
 }
