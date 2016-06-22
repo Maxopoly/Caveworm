@@ -41,6 +41,7 @@ public class WormConfig {
 
 	private String caveFormingType;
 	private Material caveFillMaterial;
+	private boolean callBlockBreaksWhileForming;
 
 	private double xLowerFormingRadiusBound;
 	private double yLowerFormingRadiusBound;
@@ -165,6 +166,7 @@ public class WormConfig {
 					(int) zUpperFormingRadiusBound);
 			yzFormingSlices = Math.min(formingSection.getInt("yzSlices", 0),
 					(int) xUpperFormingRadiusBound);
+			callBlockBreaksWhileForming = formingSection.getBoolean("callBlockBreaks", false);
 			xFormingSimplexSeed = formingSection.getLong("xSeed", -1);
 			yFormingSimplexSeed = formingSection.getLong("ySeed", -1);
 			zFormingSimplexSeed = formingSection.getLong("zSeed", -1);
@@ -410,5 +412,9 @@ public class WormConfig {
 	public long getDistributionSeed() {
 		return distributionSeed == -1 ? new Random().nextLong()
 				: distributionSeed;
+	}
+	
+	public boolean callBlockBreaksWhileForming() {
+		return callBlockBreaksWhileForming;
 	}
 }

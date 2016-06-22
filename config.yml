@@ -68,6 +68,9 @@ caveFormingBehavior:
   #Material with which the emptied out space is replaced, use identifiers as specified here:
   #https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html   (Default: AIR)
   fillMaterial: AIR
+  
+  #Whether block breaks are called when clearing out blocks so other plugins can hook into the generation
+  callBlockBreaks: false
  
 distribution:
   area:

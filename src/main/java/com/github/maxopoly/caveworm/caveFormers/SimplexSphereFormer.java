@@ -1,12 +1,14 @@
 package com.github.maxopoly.caveworm.caveFormers;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Random;
 
+import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.util.noise.SimplexNoiseGenerator;
 
 public class SimplexSphereFormer implements CaveFormer {
@@ -18,6 +20,7 @@ public class SimplexSphereFormer implements CaveFormer {
 	private Material replacementMaterial;
 	private double amplitude;
 	private Collection<Material> ignoreMaterials;
+	private boolean callBlockBreaks;
 
 	private int xOctaves;
 	private int yOctaves;
@@ -45,7 +48,7 @@ public class SimplexSphereFormer implements CaveFormer {
 			double xUpperRadiusBound, double yUpperRadiusBound,
 			double zUpperRadiusBound, double xLowerRadiusBound,
 			double yLowerRadiusBound, double zLowerRadiusBound, int xzSlices,
-			int xySlices, int yzSlices, Collection<Material> materialsToIgnore,
+			int xySlices, int yzSlices, Collection<Material> materialsToIgnore, boolean callBlockBreaks,
 			long xSeed, long ySeed, long zSeed) {
 		this.replacementMaterial = replacementMaterial;
 		this.amplitude = 2.0; // hardcoded to ensure it properly scales with the
@@ -68,6 +71,7 @@ public class SimplexSphereFormer implements CaveFormer {
 		this.xySlices = xySlices;
 		this.xzSlices = xzSlices;
 		this.yzSlices = yzSlices;
+		this.callBlockBreaks = callBlockBreaks;
 		this.ignoreMaterials = materialsToIgnore;
 	}
 
@@ -77,12 +81,12 @@ public class SimplexSphereFormer implements CaveFormer {
 			double xUpperRadiusBound, double yUpperRadiusBound,
 			double zUpperRadiusBound, double xLowerRadiusBound,
 			double yLowerRadiusBound, double zLowerRadiusBound, int xzSlices,
-			int xySlices, int yzSlices, Collection<Material> materialsToIgnore) {
+			int xySlices, int yzSlices, Collection<Material> materialsToIgnore, boolean callBlockBreaks) {
 		this(replacementMaterial, xOctaves, yOctaves, zOctaves,
 				xSpreadFrequency, ySpreadFrequency, zSpreadFrequency,
 				xUpperRadiusBound, yUpperRadiusBound, zUpperRadiusBound,
 				xLowerRadiusBound, yLowerRadiusBound, zLowerRadiusBound,
-				xzSlices, xySlices, yzSlices, materialsToIgnore, new Random()
+				xzSlices, xySlices, yzSlices, materialsToIgnore, callBlockBreaks, new Random()
 						.nextLong(), new Random().nextLong(), new Random()
 						.nextLong());
 	}
@@ -176,8 +180,21 @@ public class SimplexSphereFormer implements CaveFormer {
 
 	private void clearBlock(Location loc) {
 		Block b = loc.getBlock();
+		Chunk c = b.getChunk();
+		while(!c.isLoaded()) {
+			c.load();
+		}
 		if (!ignoreMaterials.contains(b.getType())) {
-			b.setType(replacementMaterial);
+			if (callBlockBreaks) {
+				BlockBreakEvent event = new BlockBreakEvent(b, null);
+				Bukkit.getPluginManager().callEvent(event);
+				if (!event.isCancelled()) {
+					b.setType(replacementMaterial);
+				}
+			}
+			else {
+				b.setType(replacementMaterial);
+			}
 		}
 	}
 }
