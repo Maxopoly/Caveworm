@@ -35,7 +35,7 @@ public class CaveWormAPI {
 		switch (config.getFormingType()) {
 		case "SimplexSphere":
 			return new SimplexSphereFormer(config.getFormingFillMaterial(),
-					config.getXFormingOctaveCount(),
+					config.getFillData(), config.getXFormingOctaveCount(),
 					config.getYFormingOctaveCount(),
 					config.getZFormingOctaveCount(),
 					config.getXFormingFrequency(),
@@ -48,10 +48,8 @@ public class CaveWormAPI {
 					config.getYLowerFormingRadiusBound(),
 					config.getZLowerFormingRadiusBound(), config.getXZSlices(),
 					config.getXYSlices(), config.getYZSlices(),
-					config.getIgnoreMaterials(),
-					config.callBlockBreaksWhileForming(),
-					config.getXFillingSeed(), config.getYFillingSeed(),
-					config.getZFillingSeed());
+					config.getIgnoreMaterials(), config.getXFillingSeed(),
+					config.getYFillingSeed(), config.getZFillingSeed());
 		default:
 			return null;
 		}
@@ -72,9 +70,10 @@ public class CaveWormAPI {
 			return null;
 		}
 		GlobalDistributor dist = new GlobalDistributor(
-				config.getDistributionArea(),
+				config.getDistributionArea(), config.getExclusionAreas(),
 				config.getLowerDistributionYBound(),
 				config.getUpperDistributionYBound(),
+				config.getDistributionYScanExclusionMaterials(),
 				config.getMinimumDistributionSurfaceDistance(),
 				config.getDistributionSeedChance(),
 				config.getLowerDistributionCaveLengthBound(),

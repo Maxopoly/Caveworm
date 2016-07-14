@@ -14,14 +14,14 @@ wormBehavior:
   zSpreadAmpltitude: 2.0
   
   #Threshhold inside which the worm wont move
-  xSpreadThreshHold: 0.08
+  xSpreadThreshHold: 0.0
   ySpreadThreshHold: 0.05
-  zSpreadThreshHold: 0.08
+  zSpreadThreshHold: 0.0
   
   #Frequency for Simplex functions determining worm movement
-  xSpreadFrequency: 0.1
-  ySpreadFrequency: 0.1
-  zSpreadFrequency: 0.1
+  xSpreadFrequency: 0.08
+  ySpreadFrequency: 0.06
+  zSpreadFrequency: 0.08
   
   #Seed used for Simplex generator to calculate movement in each dimension, -1 for random seed
   xSeed: -1
@@ -69,13 +69,13 @@ caveFormingBehavior:
   #https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html   (Default: AIR)
   fillMaterial: AIR
   
-  #Whether block breaks are called when clearing out blocks so other plugins can hook into the generation
-  callBlockBreaks: false
+  #Whether spoofed block breaks are sent to hidden ore when removing blocks
+  useHiddenOre: true
  
 distribution:
   area:
     type: ELLIPSE
-    world: world
+    world: abydos
     center:
       x: 0
       z: 0
@@ -83,9 +83,79 @@ distribution:
     zSize: 500
   lowerYBound: 0
   upperYBound: 255
-  minimumSurfaceDistance: 20
-  seedChance: 0.5
+  minimumSurfaceDistance: 6
+  seedChance: 0.03
   lowerCaveLengthBound: 50
   upperCaveLengthBound: 250
+  yScanIgnoreMaterials:
+   - LEAVES
+   - LEAVES_2
+   - LOG
+   - LOG_2
+   - STATIONARY_WATER
+   - WATER
+   - CACTUS
+   - SUGAR_CANE_BLOCK
+   - MELON
+   - PUMPKIN
+   - MUSHROOM
+   - GRASS
+   - RED_MUSHROOM
+   - LONG_GRASS
   minimumCaveLength: 30
+  caveSystems:
+    a:
+      chance: 0.1
+      offSets:
+        a:
+          xOffSet: 1
+          yOffSet: 0
+          zOffSet: 1
+        b:
+          xOffSet: -1
+          yOffSet: 0
+          zOffSet: 1
+        c:
+          xOffSet: -1
+          yOffSet: 1
+          zOffSet: -1
+    # b:
+      # chance: 0.1
+      # offSets:
+        # a:
+          # xOffSet: 2
+          # yOffSet: 1
+          # zOffSet: 2
+        # b:
+          # xOffSet: -2
+          # yOffSet: -2
+          # zOffSet: -2
+        # c:
+          # xOffSet: 2
+          # yOffSet: -1
+          # zOffSet: 3
+        # d:
+          # xOffSet: 1
+          # yOffSet: 0
+          # zOffSet: 1
+    # c:
+      # chance: 0.1
+      # offSets:
+        # a:
+          # xOffSet: 1
+          # yOffSet: 0
+          # zOffSet: 1
+        # b:
+          # xOffSet: -1
+          # yOffSet: 0
+          # zOffSet: 1
+    # d:
+      # chance: 0.1
+      # offSets:
+        # a:
+          # xOffSet: 1
+          # yOffSet: 0
+          # zOffSet: -2
+          
+  caveSystemSeed: -1
   seed: -1
