@@ -50,6 +50,8 @@ public class WormConfig {
     private String caveFormingType;
     private Material caveFillMaterial;
     private byte caveFillData;
+    private int fallingBlockFillingBehavior;
+    private Material fallingBlockReplacement;
 
     private double xLowerFormingRadiusBound;
     private double yLowerFormingRadiusBound;
@@ -91,11 +93,8 @@ public class WormConfig {
 
     private Collection<Material> fillingIgnoreMaterials;
 
-    public void parse(Caveworm plugin) {
+    public void parse(Caveworm plugin, FileConfiguration config) {
 	seedPicker = new Random();
-	plugin.saveDefaultConfig();
-	plugin.reloadConfig();
-	FileConfiguration config = plugin.getConfig();
 	ConfigurationSection behaviorSection = config
 		.getConfigurationSection("wormBehavior");
 	if (behaviorSection == null) {
@@ -179,9 +178,29 @@ public class WormConfig {
 	    yzFormingSlices = Math.min(formingSection.getInt("yzSlices", 0),
 		    (int) xUpperFormingRadiusBound);
 	    useHiddenOre = formingSection.getBoolean("useHiddenOre", false);
+	    String fallingBlockReplacementString = formingSection.getString(
+		    "fallingBlockReplacement", "STONE");
+	    try {
+		fallingBlockReplacement = Material
+			.valueOf(fallingBlockReplacementString);
+	    } catch (IllegalArgumentException e) {
+		plugin.warning("Specified unknown material name "
+			+ fallingBlockReplacementString + " at "
+			+ formingSection.getCurrentPath()
+			+ ". Defaulting it to stone");
+		fallingBlockReplacement = Material.STONE;
+	    }
 	    xFormingSimplexSeed = formingSection.getLong("xSeed", -1);
 	    yFormingSimplexSeed = formingSection.getLong("ySeed", -1);
 	    zFormingSimplexSeed = formingSection.getLong("zSeed", -1);
+	    fallingBlockFillingBehavior = formingSection.getInt(
+		    "fallingBlockBehavior", 0);
+	    if (fallingBlockFillingBehavior < 0
+		    || fallingBlockFillingBehavior > 2) {
+		plugin.warning("Falling block behavior was set to illegal value: "
+			+ fallingBlockFillingBehavior + ". Defaulting it to 0");
+		fallingBlockFillingBehavior = 0;
+	    }
 	    List<String> ignoreMaterials = formingSection
 		    .getStringList("ignoreMaterials");
 	    if (ignoreMaterials != null) {
@@ -535,12 +554,20 @@ public class WormConfig {
     public byte getFillData() {
 	return caveFillData;
     }
-    
-    public Collection <Material> getDistributionYScanExclusionMaterials() {
+
+    public Collection<Material> getDistributionYScanExclusionMaterials() {
 	return yScanExclusionMaterials;
     }
 
     public List<IArea> getExclusionAreas() {
 	return exclusionAreas;
+    }
+
+    public int getFallingBlockBehavior() {
+	return fallingBlockFillingBehavior;
+    }
+
+    public Material getFallingBlockReplacement() {
+	return fallingBlockReplacement;
     }
 }

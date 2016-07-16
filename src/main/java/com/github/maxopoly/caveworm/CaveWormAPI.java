@@ -48,7 +48,7 @@ public class CaveWormAPI {
 					config.getYLowerFormingRadiusBound(),
 					config.getZLowerFormingRadiusBound(), config.getXZSlices(),
 					config.getXYSlices(), config.getYZSlices(),
-					config.getIgnoreMaterials(), config.getXFillingSeed(),
+					config.getIgnoreMaterials(), config.getFallingBlockBehavior(), config.getFallingBlockReplacement(), config.getXFillingSeed(),
 					config.getYFillingSeed(), config.getZFillingSeed());
 		default:
 			return null;

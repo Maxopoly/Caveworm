@@ -46,6 +46,7 @@ public class SimplexSphereFormer implements CaveFormer {
     private int yzSlices;
 
     private FallingBlockHandler fallingBlockHandler;
+    private Material fallingBlockReplacement;
 
     public SimplexSphereFormer(Material replacementMaterial,
 	    byte replacementData, int xOctaves, int yOctaves, int zOctaves,
@@ -54,7 +55,7 @@ public class SimplexSphereFormer implements CaveFormer {
 	    double yUpperRadiusBound, double zUpperRadiusBound,
 	    double xLowerRadiusBound, double yLowerRadiusBound,
 	    double zLowerRadiusBound, int xzSlices, int xySlices, int yzSlices,
-	    Collection<Material> materialsToIgnore, int fallingBlockBehavior,
+	    Collection<Material> materialsToIgnore, int fallingBlockBehavior, Material fallingBlockReplacement,
 	    long xSeed, long ySeed, long zSeed) {
 	this.replacementMaterial = replacementMaterial;
 	this.amplitude = 2.0; // hardcoded to ensure it properly scales with the
@@ -78,6 +79,7 @@ public class SimplexSphereFormer implements CaveFormer {
 	this.xzSlices = xzSlices;
 	this.yzSlices = yzSlices;
 	this.ignoreMaterials = materialsToIgnore;
+	this.fallingBlockReplacement = fallingBlockReplacement;
 	this.replacementData = replacementData;
 	this.hiddenOreManager = Caveworm.getHiddenOreManager();
 	switch (fallingBlockBehavior) {
@@ -94,13 +96,22 @@ public class SimplexSphereFormer implements CaveFormer {
 	    };
 	    break;
 	case 2:
-	    // move the block one upwards instead of clearing it
+	    // move the block one upwards instead of clearing it and if the block moved is gravity affected as well, instead another block is put in place
 	    fallingBlockHandler = (b) -> {
 		Block above = b.getRelative(BlockFace.UP);
+		if (b.getType().hasGravity()) {
+		    above.setType(fallingBlockReplacement);
+		    executeBlockModification(b);
+		}
+		else {
 		above.setType(b.getType(), false);
 		above.setData(b.getData(), true);
 		executeBlockModification(b);
+		}
 	    };
+	    break;
+	   default:
+	       throw new IllegalArgumentException();
 	}
     }
 
@@ -111,12 +122,12 @@ public class SimplexSphereFormer implements CaveFormer {
 	    double yUpperRadiusBound, double zUpperRadiusBound,
 	    double xLowerRadiusBound, double yLowerRadiusBound,
 	    double zLowerRadiusBound, int xzSlices, int xySlices, int yzSlices,
-	    Collection<Material> materialsToIgnore, int fallingBlockBehavior) {
+	    Collection<Material> materialsToIgnore, int fallingBlockBehavior, Material fallingBlockReplacement) {
 	this(replacementMaterial, replacementData, xOctaves, yOctaves,
 		zOctaves, xSpreadFrequency, ySpreadFrequency, zSpreadFrequency,
 		xUpperRadiusBound, yUpperRadiusBound, zUpperRadiusBound,
 		xLowerRadiusBound, yLowerRadiusBound, zLowerRadiusBound,
-		xzSlices, xySlices, yzSlices, materialsToIgnore, fallingBlockBehavior, new Random()
+		xzSlices, xySlices, yzSlices, materialsToIgnore, fallingBlockBehavior, fallingBlockReplacement, new Random()
 			.nextLong(), new Random().nextLong(), new Random()
 			.nextLong());
     }

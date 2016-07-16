@@ -28,7 +28,6 @@ public class SeedArea extends PlayerCommand {
 		}
 		sender.sendMessage(ChatColor.GOLD + "Beginning to seed. This may take a while");
 		dist.distribute();
-		sender.sendMessage(ChatColor.GREEN + "Successfully seeded caves into the map");
 		return true;
 	}
 

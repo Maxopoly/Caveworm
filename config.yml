@@ -20,7 +20,7 @@ wormBehavior:
   
   #Frequency for Simplex functions determining worm movement
   xSpreadFrequency: 0.08
-  ySpreadFrequency: 0.06
+  ySpreadFrequency: 0.16
   zSpreadFrequency: 0.08
   
   #Seed used for Simplex generator to calculate movement in each dimension, -1 for random seed
@@ -55,6 +55,14 @@ caveFormingBehavior:
   xzSlices: 0
   xySlices: 0
   yzSlices: 0
+  
+  #What to do if a block, which is affected by gravity is above a block to remove:
+  #0 Means the block will be cleared, ignoring the fact it will create a flying block
+  #1 Means the block wont be cleared
+  #2 Means the block will be moved upwards to replace the falling block
+  fallingBlockBehavior: 2
+  
+  fallingBlockReplacement: SANDSTONE
   
   #Materials that wont be replaced when generating caves, use spigot material identifiers here
   ignoreMaterials:
