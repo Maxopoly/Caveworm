@@ -27,14 +27,6 @@ public class Caveworm extends ACivMod {
 		warning("Attempted to send block break events to HiddenOre according to config, but it seems like HiddenOre isn't loaded on this server");
 	    }
 	}
-
-	GlobalDistributor dist = CaveWormAPI.getDistributer();
-	if (dist == null) {
-	    info(ChatColor.RED
-		    + "Could not initiate seeding, check console log for more information");
-	}
-	info(ChatColor.GOLD + "Beginning to seed. This may take a while");
-	dist.distribute();
     }
 
     @Override

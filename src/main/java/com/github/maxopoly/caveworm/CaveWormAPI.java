@@ -2,6 +2,7 @@ package com.github.maxopoly.caveworm;
 
 import org.bukkit.Location;
 
+import com.github.maxopoly.caveworm.caveFormers.CaveFormer;
 import com.github.maxopoly.caveworm.caveFormers.SimplexSphereFormer;
 import com.github.maxopoly.caveworm.distribution.GlobalDistributor;
 import com.github.maxopoly.caveworm.worms.SimplexNoiseWorm;
@@ -9,8 +10,7 @@ import com.github.maxopoly.caveworm.worms.Worm;
 
 public class CaveWormAPI {
 
-	public static Worm getWorm(Location loc, int length) {
-		WormConfig config = Caveworm.getWormConfig();
+	public static Worm getWorm(Location loc, int length, WormConfig config) {
 		switch (config.getWormType()) {
 		case "Simplexworm":
 			return new SimplexNoiseWorm(loc, config.getXMovementOctaves(),
@@ -30,8 +30,7 @@ public class CaveWormAPI {
 		}
 	}
 
-	public static SimplexSphereFormer getCaveFormer() {
-		WormConfig config = Caveworm.getWormConfig();
+	public static SimplexSphereFormer getCaveFormer(WormConfig config) {
 		switch (config.getFormingType()) {
 		case "SimplexSphere":
 			return new SimplexSphereFormer(config.getFormingFillMaterial(),
@@ -55,31 +54,21 @@ public class CaveWormAPI {
 		}
 	}
 
-	public static void spawnCaveAt(Location loc, int length) {
-		Worm w = getWorm(loc, length);
+	public static void spawnCaveAt(Location loc, int length, WormConfig config) {
+		Worm w = getWorm(loc, length, config);
+		CaveFormer former = getCaveFormer(config);
 		while (w.hasNext()) {
-			getCaveFormer().extendLocation(w.next());
+			former.extendLocation(w.next());
 		}
 	}
 
-	public static GlobalDistributor getDistributer() {
-		WormConfig config = Caveworm.getWormConfig();
+	public static GlobalDistributor getDistributer(WormConfig config) {
 		if (config.getDistributionArea() == null) {
 			Caveworm.getInstance().warning(
 					"No area loaded, can't get distributor");
 			return null;
 		}
-		GlobalDistributor dist = new GlobalDistributor(
-				config.getDistributionArea(), config.getExclusionAreas(),
-				config.getLowerDistributionYBound(),
-				config.getUpperDistributionYBound(),
-				config.getDistributionYScanExclusionMaterials(),
-				config.getMinimumDistributionSurfaceDistance(),
-				config.getDistributionSeedChance(),
-				config.getLowerDistributionCaveLengthBound(),
-				config.getUpperDistributionCaveLengthBound(),
-				config.getMinimumDistributionCaveLength(),
-				config.getDistributionSeed());
+		GlobalDistributor dist = new GlobalDistributor(config,config.getDistributionSeed(), 35);
 		return dist;
 	}
 }

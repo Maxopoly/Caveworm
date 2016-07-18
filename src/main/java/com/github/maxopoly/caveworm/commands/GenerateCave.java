@@ -7,6 +7,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.github.maxopoly.caveworm.CaveWormAPI;
+import com.github.maxopoly.caveworm.Caveworm;
 
 import vg.civcraft.mc.civmodcore.command.PlayerCommand;
 
@@ -35,14 +36,13 @@ public class GenerateCave extends PlayerCommand {
 			 sender.sendMessage(ChatColor.RED + args [0] + " is not a valid integer");
 			 return true;
 		 }
-		CaveWormAPI.spawnCaveAt(((Player) sender).getLocation(), length);
+		CaveWormAPI.spawnCaveAt(((Player) sender).getLocation(), length, Caveworm.getWormConfig());
 		sender.sendMessage(ChatColor.GREEN + "Done");
 		return true;
 	}
 
 	@Override
 	public List<String> tabComplete(CommandSender sender, String[] args) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

@@ -46,7 +46,6 @@ public class SimplexSphereFormer implements CaveFormer {
     private int yzSlices;
 
     private FallingBlockHandler fallingBlockHandler;
-    private Material fallingBlockReplacement;
 
     public SimplexSphereFormer(Material replacementMaterial,
 	    byte replacementData, int xOctaves, int yOctaves, int zOctaves,
@@ -79,7 +78,6 @@ public class SimplexSphereFormer implements CaveFormer {
 	this.xzSlices = xzSlices;
 	this.yzSlices = yzSlices;
 	this.ignoreMaterials = materialsToIgnore;
-	this.fallingBlockReplacement = fallingBlockReplacement;
 	this.replacementData = replacementData;
 	this.hiddenOreManager = Caveworm.getHiddenOreManager();
 	switch (fallingBlockBehavior) {
@@ -223,8 +221,8 @@ public class SimplexSphereFormer implements CaveFormer {
 	if (hiddenOreManager != null) {
 	    hiddenOreManager.callBreak(b);
 	}
-	b.setType(replacementMaterial);
-	b.setData(replacementData);
+	b.setType(replacementMaterial, false);
+	b.setData(replacementData, false);
     }
 
     private void clearBlock(Location loc) {
@@ -233,9 +231,6 @@ public class SimplexSphereFormer implements CaveFormer {
 	}
 	Block b = loc.getBlock();
 	Chunk c = b.getChunk();
-	while (!c.isLoaded()) {
-	    c.load();
-	}
 	if (!ignoreMaterials.contains(b.getType())
 		&& (b.getType() != replacementMaterial || b.getData() != replacementData)) {
 	    if (b.getRelative(BlockFace.UP).getType().hasGravity()) {

@@ -10,6 +10,8 @@ commands:
       permission: cw.op
     cwseed:
       permission: cw.op
+    cwmultiseed:
+      permission: cw.op
 permissions:
     cw.op:
         default: op

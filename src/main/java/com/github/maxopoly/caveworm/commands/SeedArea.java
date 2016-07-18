@@ -6,6 +6,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
 import com.github.maxopoly.caveworm.CaveWormAPI;
+import com.github.maxopoly.caveworm.Caveworm;
 import com.github.maxopoly.caveworm.distribution.GlobalDistributor;
 
 import vg.civcraft.mc.civmodcore.command.PlayerCommand;
@@ -21,7 +22,7 @@ public class SeedArea extends PlayerCommand {
 
 	@Override
 	public boolean execute(CommandSender sender, String[] args) {
-		GlobalDistributor dist = CaveWormAPI.getDistributer();
+		GlobalDistributor dist = CaveWormAPI.getDistributer(Caveworm.getWormConfig());
 		if (dist == null) {
 			sender.sendMessage(ChatColor.RED + "Could not initiate seeding, check console log for more information");
 			return true;
