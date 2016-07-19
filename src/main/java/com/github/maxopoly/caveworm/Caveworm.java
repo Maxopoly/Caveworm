@@ -3,6 +3,8 @@ package com.github.maxopoly.caveworm;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 
+import org.spigotmc.AsyncCatcher;
+
 import com.github.maxopoly.caveworm.commands.CavewormCommandHandler;
 import com.github.maxopoly.caveworm.distribution.GlobalDistributor;
 import com.github.maxopoly.caveworm.external.HiddenOreManager;
@@ -27,6 +29,7 @@ public class Caveworm extends ACivMod {
 		warning("Attempted to send block break events to HiddenOre according to config, but it seems like HiddenOre isn't loaded on this server");
 	    }
 	}
+	AsyncCatcher.enabled = false;
     }
 
     @Override

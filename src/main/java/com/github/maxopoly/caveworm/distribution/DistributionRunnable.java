@@ -35,10 +35,10 @@ public class DistributionRunnable implements Runnable {
     private Caveworm plugin;
     private WormConfig config;
     private GlobalDistributor distributor;
-    private FormingQueue former;
+    private SimplexSphereFormer former;
 
     public DistributionRunnable(WormConfig config, int id, int seed,
-	    PseudoChunk[] chunks, GlobalDistributor distributor, FormingQueue former) {
+	    PseudoChunk[] chunks, GlobalDistributor distributor) {
 	this.seedChance = config.getDistributionSeedChance();
 	this.config = config;
 	this.rng = new Random(seed);
@@ -53,7 +53,7 @@ public class DistributionRunnable implements Runnable {
 		.getUpperDistributionCaveLengthBound();
 	this.minimumCaveLength = config.getMinimumDistributionCaveLength();
 	this.distributor = distributor;
-	this.former = former;
+	this.former = CaveWormAPI.getCaveFormer(config, id);
 	this.id = id;
     }
 
@@ -116,7 +116,9 @@ public class DistributionRunnable implements Runnable {
 			}
 			plugin.debug("Seeding cave at " + loc.toString()
 				+ " with a total length of " + path.size());
-			former.addAll(path);
+			for(Location loca : path) {
+			    former.extendLocation(loca);
+			}
 		    }
 		}
 	    }
@@ -126,6 +128,7 @@ public class DistributionRunnable implements Runnable {
 				+ " processed by thread " + id);
 	    }
 	}
+	former.clearRemaining();
 		Caveworm.getInstance().info(
 			"Thread " + id + " finished calculation");
 	distributor.notifyCompletion(id);

@@ -28,7 +28,7 @@ public class FormingQueue implements Runnable {
 		this, 1L, 1L);
 	this.modificationsPerTick = modificationsPerTick;
 	this.config = config;
-	former = CaveWormAPI.getCaveFormer(config);
+	former = CaveWormAPI.getCaveFormer(config, 0);
 	this.jobs = JobQueue.getInstance();
     }
 

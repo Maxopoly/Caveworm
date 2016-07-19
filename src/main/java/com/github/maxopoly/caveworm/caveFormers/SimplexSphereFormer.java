@@ -1,6 +1,9 @@
 package com.github.maxopoly.caveworm.caveFormers;
 
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 import java.util.Random;
 
 import org.bukkit.Chunk;
@@ -47,18 +50,24 @@ public class SimplexSphereFormer implements CaveFormer {
 
     private FallingBlockHandler fallingBlockHandler;
 
-    public SimplexSphereFormer(Material replacementMaterial,
+    private List<Location> doLater;
+    private List<Location> doLaterCenters;
+
+    private int id;
+
+    public SimplexSphereFormer(int id, Material replacementMaterial,
 	    byte replacementData, int xOctaves, int yOctaves, int zOctaves,
 	    double xSpreadFrequency, double ySpreadFrequency,
 	    double zSpreadFrequency, double xUpperRadiusBound,
 	    double yUpperRadiusBound, double zUpperRadiusBound,
 	    double xLowerRadiusBound, double yLowerRadiusBound,
 	    double zLowerRadiusBound, int xzSlices, int xySlices, int yzSlices,
-	    Collection<Material> materialsToIgnore, int fallingBlockBehavior, Material fallingBlockReplacement,
-	    long xSeed, long ySeed, long zSeed) {
+	    Collection<Material> materialsToIgnore, int fallingBlockBehavior,
+	    Material fallingBlockReplacement, long xSeed, long ySeed, long zSeed) {
 	this.replacementMaterial = replacementMaterial;
 	this.amplitude = 2.0; // hardcoded to ensure it properly scales with the
 			      // bounds
+	this.id = id;
 	this.xGenerator = new SimplexNoiseGenerator(xSeed);
 	this.yGenerator = new SimplexNoiseGenerator(ySeed);
 	this.zGenerator = new SimplexNoiseGenerator(zSeed);
@@ -77,6 +86,7 @@ public class SimplexSphereFormer implements CaveFormer {
 	this.xySlices = xySlices;
 	this.xzSlices = xzSlices;
 	this.yzSlices = yzSlices;
+	this.doLater = new LinkedList<Location>();
 	this.ignoreMaterials = materialsToIgnore;
 	this.replacementData = replacementData;
 	this.hiddenOreManager = Caveworm.getHiddenOreManager();
@@ -94,43 +104,78 @@ public class SimplexSphereFormer implements CaveFormer {
 	    };
 	    break;
 	case 2:
-	    // move the block one upwards instead of clearing it and if the block moved is gravity affected as well, instead another block is put in place
+	    // move the block one upwards instead of clearing it and if the
+	    // block moved is gravity affected as well, instead another block is
+	    // put in place
 	    fallingBlockHandler = (b) -> {
 		Block above = b.getRelative(BlockFace.UP);
 		if (b.getType().hasGravity()) {
 		    above.setType(fallingBlockReplacement);
 		    executeBlockModification(b);
-		}
-		else {
-		above.setType(b.getType(), false);
-		above.setData(b.getData(), true);
-		executeBlockModification(b);
+		} else {
+		    above.setTypeIdAndData(b.getType().getId(), b.getData(),
+			    false);
+		    executeBlockModification(b);
 		}
 	    };
 	    break;
-	   default:
-	       throw new IllegalArgumentException();
+	default:
+	    throw new IllegalArgumentException();
 	}
     }
 
-    public SimplexSphereFormer(Material replacementMaterial,
+    public SimplexSphereFormer(int id, Material replacementMaterial,
 	    byte replacementData, int xOctaves, int yOctaves, int zOctaves,
 	    double xSpreadFrequency, double ySpreadFrequency,
 	    double zSpreadFrequency, double xUpperRadiusBound,
 	    double yUpperRadiusBound, double zUpperRadiusBound,
 	    double xLowerRadiusBound, double yLowerRadiusBound,
 	    double zLowerRadiusBound, int xzSlices, int xySlices, int yzSlices,
-	    Collection<Material> materialsToIgnore, int fallingBlockBehavior, Material fallingBlockReplacement) {
-	this(replacementMaterial, replacementData, xOctaves, yOctaves,
+	    Collection<Material> materialsToIgnore, int fallingBlockBehavior,
+	    Material fallingBlockReplacement) {
+	this(id, replacementMaterial, replacementData, xOctaves, yOctaves,
 		zOctaves, xSpreadFrequency, ySpreadFrequency, zSpreadFrequency,
 		xUpperRadiusBound, yUpperRadiusBound, zUpperRadiusBound,
 		xLowerRadiusBound, yLowerRadiusBound, zLowerRadiusBound,
-		xzSlices, xySlices, yzSlices, materialsToIgnore, fallingBlockBehavior, fallingBlockReplacement, new Random()
+		xzSlices, xySlices, yzSlices, materialsToIgnore,
+		fallingBlockBehavior, fallingBlockReplacement, new Random()
 			.nextLong(), new Random().nextLong(), new Random()
 			.nextLong());
     }
 
+    public void clearRemaining() {
+	int failCounter = 0;
+	while (doLater.size() != 0) {
+	    int startSize = doLater.size();
+	    // copy in new array to avoid concurrent problems when forming fails
+	    // while doing this
+	    Location[] locsToDoNow = doLater.toArray(new Location[startSize]);
+	    doLater.clear();
+	    for (Location loc : locsToDoNow) {
+		clearBlock(loc);
+	    }
+	    System.out.println("Cleanupqueue for thread " + id + " processed "
+		    + (startSize - doLater.size()) + " locations, "
+		    + doLater.size() + " left ");
+	    if (startSize == doLater.size()) {
+		failCounter++;
+		try {
+		    Thread.sleep(5);
+		} catch (InterruptedException e) {
+		    e.printStackTrace();
+		}
+	    } else {
+		failCounter = 0;
+	    }
+	    if (failCounter >= 1000) {
+		return;
+	    }
+	}
+    }
+
     public void extendLocation(Location loc) {
+	// always clear center block
+	clearBlock(loc);
 	// calculate x distance blocks must be within
 	double currentXRange = xGenerator.noise(loc.getX(), loc.getY(),
 		loc.getZ(), xOctaves, xSpreadFrequency, amplitude, true);
@@ -149,8 +194,6 @@ public class SimplexSphereFormer implements CaveFormer {
 	currentZRange = (Math.abs(currentZRange
 		* (double) (zUpperRadiusBound - zLowerRadiusBound)))
 		+ (double) zLowerRadiusBound;
-	// always clear center block
-	clearBlock(loc);
 	// clear circle in X-Z direction
 	for (int yOffSet = 0; yOffSet <= xzSlices; yOffSet++) {
 	    for (double relX = loc.getX() - xUpperRadiusBound; relX <= loc
@@ -221,8 +264,12 @@ public class SimplexSphereFormer implements CaveFormer {
 	if (hiddenOreManager != null) {
 	    hiddenOreManager.callBreak(b);
 	}
-	b.setType(replacementMaterial, false);
-	b.setData(replacementData, false);
+	b.setTypeIdAndData(replacementMaterial.getId(), replacementData, false);
+	Block comp = b.getWorld().getBlockAt(b.getX(), b.getY(), b.getZ());
+	if (!comp.getType().equals(replacementMaterial)
+		|| comp.getData() != replacementData) {
+	    doLater.add(b.getLocation());
+	}
     }
 
     private void clearBlock(Location loc) {
@@ -230,13 +277,11 @@ public class SimplexSphereFormer implements CaveFormer {
 	    return;
 	}
 	Block b = loc.getBlock();
-	Chunk c = b.getChunk();
-	if (!ignoreMaterials.contains(b.getType())
+	if ((!ignoreMaterials.contains(b.getType()))
 		&& (b.getType() != replacementMaterial || b.getData() != replacementData)) {
 	    if (b.getRelative(BlockFace.UP).getType().hasGravity()) {
 		fallingBlockHandler.handle(b);
-	    }
-	    else {
+	    } else {
 		executeBlockModification(b);
 	    }
 	}

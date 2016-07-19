@@ -30,10 +30,10 @@ public class CaveWormAPI {
 		}
 	}
 
-	public static SimplexSphereFormer getCaveFormer(WormConfig config) {
+	public static SimplexSphereFormer getCaveFormer(WormConfig config, int id) {
 		switch (config.getFormingType()) {
 		case "SimplexSphere":
-			return new SimplexSphereFormer(config.getFormingFillMaterial(),
+			return new SimplexSphereFormer(id, config.getFormingFillMaterial(),
 					config.getFillData(), config.getXFormingOctaveCount(),
 					config.getYFormingOctaveCount(),
 					config.getZFormingOctaveCount(),
@@ -56,7 +56,7 @@ public class CaveWormAPI {
 
 	public static void spawnCaveAt(Location loc, int length, WormConfig config) {
 		Worm w = getWorm(loc, length, config);
-		CaveFormer former = getCaveFormer(config);
+		CaveFormer former = getCaveFormer(config, 0);
 		while (w.hasNext()) {
 			former.extendLocation(w.next());
 		}
@@ -68,7 +68,7 @@ public class CaveWormAPI {
 					"No area loaded, can't get distributor");
 			return null;
 		}
-		GlobalDistributor dist = new GlobalDistributor(config,config.getDistributionSeed(), 35);
+		GlobalDistributor dist = new GlobalDistributor(config,config.getDistributionSeed(), 39);
 		return dist;
 	}
 }

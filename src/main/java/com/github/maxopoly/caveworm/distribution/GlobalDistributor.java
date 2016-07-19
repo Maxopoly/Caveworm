@@ -46,13 +46,12 @@ public class GlobalDistributor {
 	PseudoChunk [] allChunks = chunkCollection.toArray(new PseudoChunk[chunkCollection.size()]);
 	plugin.info("Loaded " + allChunks.length + " chunks for generation");
 	int chunksPerThread =  (int) Math.ceil(((double)allChunks.length) /((double) threads));
-	FormingQueue former = new FormingQueue(config, 2000);
 	for(int i = 0; i < threads; i++) {
 	    PseudoChunk [] chunkRun = new PseudoChunk [chunksPerThread];
 	    for(int x = 0; x < chunksPerThread && (i * chunksPerThread + x) < allChunks.length; x++) {
 		chunkRun [x] = allChunks [i * chunksPerThread + x];
 	    }
-	    Thread t = new Thread(new DistributionRunnable(config, i, rng.nextInt(), chunkRun, this, former));
+	    Thread t = new Thread(new DistributionRunnable(config, i, rng.nextInt(), chunkRun, this));
 	    t.start();
 	}
     }
