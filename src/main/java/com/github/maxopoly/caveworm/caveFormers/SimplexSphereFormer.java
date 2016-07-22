@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Random;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -56,14 +57,15 @@ public class SimplexSphereFormer implements CaveFormer {
     private int id;
 
     public SimplexSphereFormer(int id, Material replacementMaterial,
-	    byte replacementData, int xOctaves, int yOctaves, int zOctaves,
-	    double xSpreadFrequency, double ySpreadFrequency,
-	    double zSpreadFrequency, double xUpperRadiusBound,
-	    double yUpperRadiusBound, double zUpperRadiusBound,
-	    double xLowerRadiusBound, double yLowerRadiusBound,
-	    double zLowerRadiusBound, int xzSlices, int xySlices, int yzSlices,
-	    Collection<Material> materialsToIgnore, int fallingBlockBehavior,
-	    Material fallingBlockReplacement, long xSeed, long ySeed, long zSeed) {
+	    boolean useHiddenOre, byte replacementData, int xOctaves,
+	    int yOctaves, int zOctaves, double xSpreadFrequency,
+	    double ySpreadFrequency, double zSpreadFrequency,
+	    double xUpperRadiusBound, double yUpperRadiusBound,
+	    double zUpperRadiusBound, double xLowerRadiusBound,
+	    double yLowerRadiusBound, double zLowerRadiusBound, int xzSlices,
+	    int xySlices, int yzSlices, Collection<Material> materialsToIgnore,
+	    int fallingBlockBehavior, Material fallingBlockReplacement,
+	    long xSeed, long ySeed, long zSeed) {
 	this.replacementMaterial = replacementMaterial;
 	this.amplitude = 2.0; // hardcoded to ensure it properly scales with the
 			      // bounds
@@ -89,7 +91,16 @@ public class SimplexSphereFormer implements CaveFormer {
 	this.doLater = new LinkedList<Location>();
 	this.ignoreMaterials = materialsToIgnore;
 	this.replacementData = replacementData;
-	this.hiddenOreManager = Caveworm.getHiddenOreManager();
+	if (useHiddenOre) {
+	    if (Bukkit.getPluginManager().isPluginEnabled("HiddenOre")) {
+		hiddenOreManager = new HiddenOreManager();
+	    } else {
+		Caveworm.getInstance()
+			.warning(
+				"Attempted to send block break events to HiddenOre according to config, but it seems like HiddenOre isn't loaded on this server");
+		hiddenOreManager = null;
+	    }
+	}
 	switch (fallingBlockBehavior) {
 	case 0:
 	    // ignore the fact that there's a falling block and clear the block
@@ -125,22 +136,22 @@ public class SimplexSphereFormer implements CaveFormer {
     }
 
     public SimplexSphereFormer(int id, Material replacementMaterial,
-	    byte replacementData, int xOctaves, int yOctaves, int zOctaves,
-	    double xSpreadFrequency, double ySpreadFrequency,
-	    double zSpreadFrequency, double xUpperRadiusBound,
-	    double yUpperRadiusBound, double zUpperRadiusBound,
-	    double xLowerRadiusBound, double yLowerRadiusBound,
-	    double zLowerRadiusBound, int xzSlices, int xySlices, int yzSlices,
-	    Collection<Material> materialsToIgnore, int fallingBlockBehavior,
-	    Material fallingBlockReplacement) {
-	this(id, replacementMaterial, replacementData, xOctaves, yOctaves,
-		zOctaves, xSpreadFrequency, ySpreadFrequency, zSpreadFrequency,
-		xUpperRadiusBound, yUpperRadiusBound, zUpperRadiusBound,
-		xLowerRadiusBound, yLowerRadiusBound, zLowerRadiusBound,
-		xzSlices, xySlices, yzSlices, materialsToIgnore,
-		fallingBlockBehavior, fallingBlockReplacement, new Random()
-			.nextLong(), new Random().nextLong(), new Random()
-			.nextLong());
+	    boolean useHiddenOre, byte replacementData, int xOctaves,
+	    int yOctaves, int zOctaves, double xSpreadFrequency,
+	    double ySpreadFrequency, double zSpreadFrequency,
+	    double xUpperRadiusBound, double yUpperRadiusBound,
+	    double zUpperRadiusBound, double xLowerRadiusBound,
+	    double yLowerRadiusBound, double zLowerRadiusBound, int xzSlices,
+	    int xySlices, int yzSlices, Collection<Material> materialsToIgnore,
+	    int fallingBlockBehavior, Material fallingBlockReplacement) {
+	this(id, replacementMaterial, useHiddenOre, replacementData, xOctaves,
+		yOctaves, zOctaves, xSpreadFrequency, ySpreadFrequency,
+		zSpreadFrequency, xUpperRadiusBound, yUpperRadiusBound,
+		zUpperRadiusBound, xLowerRadiusBound, yLowerRadiusBound,
+		zLowerRadiusBound, xzSlices, xySlices, yzSlices,
+		materialsToIgnore, fallingBlockBehavior,
+		fallingBlockReplacement, new Random().nextLong(), new Random()
+			.nextLong(), new Random().nextLong());
     }
 
     public void clearRemaining() {
